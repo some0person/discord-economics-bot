@@ -1,0 +1,9 @@
+# Virtual environment
+venv/
+
+# Cached and precompiled files
+__pycache__/
+
+# Secret data
+secret
+channels
