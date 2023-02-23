@@ -1,2 +1,3 @@
 # How to use
-Insert your Bot <token> and <client id> into "config.py"
+Insert your Bot <token> and <client id> into "bot/config.py"
+Edit .env file with your data
