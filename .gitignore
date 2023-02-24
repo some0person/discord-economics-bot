@@ -6,6 +6,5 @@ __pycache__/
 
 # Secret data
 secret
-secret.env
-channels
 db-tables-layout.xlsx
+.vscode

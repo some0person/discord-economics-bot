@@ -1,5 +1,5 @@
 CREATE TABLE settings (
-    server_id INTEGER UNIQUE NOT NULL,
+    server_id BIGINT UNIQUE NOT NULL,
     reaction VARCHAR NOT NULL,
     l_channels VARCHAR,
     s_channel INTEGER,

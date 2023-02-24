@@ -1,9 +1,10 @@
 import discord
 from discord.ext import commands
-from config import settings
+from os import environ as env
+from models import *
 
 
-bot = commands.Bot(command_prefix=settings["prefix"], intents=discord.Intents.all())
+bot = commands.Bot(command_prefix=env["PREFIX"], intents=discord.Intents.all())
 
 
 def ch_id_conv(string, channels):
@@ -13,11 +14,21 @@ def ch_id_conv(string, channels):
     return
 
 
+@bot.event
+async def on_ready():
+    if Settings().checkServers([guild.id for guild in bot.guilds]):
+        Settings().regServers([guild.id for guild in bot.guilds])
+    
+
+
 @bot.command()
 async def set_listen_channel(ctx, *args):
+    print("lol")
     channel = ch_id_conv(args, ctx.guild.text_channels)
     if channel:
-        f = open("channels", 'a').write(str(channel) + '\n')
+        await ctx.send("".join([str(guild.id) for guild in bot.guilds]))
+        
+        await ctx.send("".join(Settings().checkServers(bot.guilds)))
     else:
         await ctx.send("This channel is incorrect :crying_cat_face: Please, use channel link (#channel-name)")
 
@@ -27,4 +38,4 @@ async def on_reaction_add(reaction, user):
     await bot.get_channel(reaction.message.channel.id).send("Reacted!")
 
 
-bot.run(settings["token"])
+bot.run(env["TOKEN"])
