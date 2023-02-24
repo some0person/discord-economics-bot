@@ -18,8 +18,13 @@ def ch_id_conv(string, channels):
 async def on_ready():
     if Settings().checkServers([guild.id for guild in bot.guilds]):
         Settings().regServers([guild.id for guild in bot.guilds])
-    
 
+
+@bot.event
+async def on_guild_join(guild):
+    if Settings().checkServers([guild.id]):
+        Settings().regServers([guild.id])
+    
 
 @bot.command()
 async def set_listen_channel(ctx, *args):
