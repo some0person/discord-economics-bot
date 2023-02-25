@@ -28,12 +28,20 @@ async def on_guild_join(guild):
 
 @bot.command()
 async def set_listen_channel(ctx, *args):
-    print("lol")
     channel = ch_id_conv(args, ctx.guild.text_channels)
     if channel:
-        await ctx.send("".join([str(guild.id) for guild in bot.guilds]))
-        
-        await ctx.send("".join(Settings().checkServers(bot.guilds)))
+        Settings().addLChannel(ctx.guild.id, channel)
+        await ctx.send("Successfully added! :smirk_cat:")
+    else:
+        await ctx.send("This channel is incorrect :crying_cat_face: Please, use channel link (#channel-name)")
+
+
+@bot.command()
+async def del_listen_channel(ctx, *args):
+    channel = ch_id_conv(args, ctx.guild.text_channels)
+    if channel:
+        Settings().delLChannel(ctx.guild.id, channel)
+        await ctx.send("Successfully removed! :cloud_tornado:")
     else:
         await ctx.send("This channel is incorrect :crying_cat_face: Please, use channel link (#channel-name)")
 
