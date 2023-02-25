@@ -27,7 +27,7 @@ async def on_guild_join(guild):
     
 
 @bot.command()
-async def set_listen_channel(ctx, *args):
+async def add_listen_channel(ctx, *args):
     channel = ch_id_conv(args, ctx.guild.text_channels)
     if channel:
         Settings().addLChannel(ctx.guild.id, channel)
