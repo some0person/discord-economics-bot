@@ -38,3 +38,7 @@ class Settings:
         self.cur.execute(f"UPDATE settings SET l_channels='{lchannels}' WHERE server_id='{serverid}'")
         self.connection.commit()
         return
+
+    def getLChannels(self, serverid):
+        self.cur.execute(f"SELECT l_channels FROM settings WHERE server_id='{serverid}'")
+        return map(lambda x: f"<#{x}>", self.cur.fetchone()[0].split(';'))

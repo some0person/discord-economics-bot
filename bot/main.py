@@ -46,6 +46,11 @@ async def del_listen_channel(ctx, *args):
         await ctx.send("This channel is incorrect :crying_cat_face: Please, use channel link (#channel-name)")
 
 
+@bot.command()
+async def get_settings(ctx, *args):
+    await ctx.send(f":eye: Channels to audit ⮧\n\t- {' | '.join(Settings().getLChannels(ctx.guild.id))}")
+
+
 @bot.event
 async def on_reaction_add(reaction, user):
     await bot.get_channel(reaction.message.channel.id).send("Reacted!")
