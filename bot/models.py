@@ -60,3 +60,11 @@ class Settings:
         if channel:
             return f"<#{channel}>"
         return "None"
+
+    def setRCost(self, serverid, cost):
+        self.cur.execute(f"UPDATE settings SET r_cost='{cost}' WHERE server_id='{serverid}'")
+        self.connection.commit()
+    
+    def getRCost(self, serverid):
+        self.cur.execute(f"SELECT r_cost FROM settings WHERE server_id='{serverid}'")
+        return self.cur.fetchone()[0]
