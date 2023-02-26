@@ -23,21 +23,18 @@ class Settings:
             self.cur.execute("""INSERT INTO settings (server_id, reaction, l_channels, s_channel, r_cost, award)
                              VALUES (%s, %s, %s, %s, %s, %s)""", (serverid, ":star:", "", 0, 10, 5))
             self.connection.commit()
-        return
 
     def addLChannel(self, serverid, channelid):
         self.cur.execute(f"SELECT l_channels FROM settings WHERE server_id='{serverid}'")
         lchannels = ';'.join(filter(lambda x: x, set(self.cur.fetchone()[0].split(';') + [str(channelid)])))
         self.cur.execute(f"UPDATE settings SET l_channels='{lchannels}' WHERE server_id='{serverid}'")
         self.connection.commit()
-        return
 
     def delLChannel(self, serverid, channelid):
         self.cur.execute(f"SELECT l_channels FROM settings WHERE server_id='{serverid}'")
         lchannels = ';'.join(filter(lambda x: x != str(channelid), self.cur.fetchone()[0].split(';')))
         self.cur.execute(f"UPDATE settings SET l_channels='{lchannels}' WHERE server_id='{serverid}'")
         self.connection.commit()
-        return
 
     def getLChannels(self, serverid):
         self.cur.execute(f"SELECT l_channels FROM settings WHERE server_id='{serverid}'")
@@ -68,3 +65,12 @@ class Settings:
     def getRCost(self, serverid):
         self.cur.execute(f"SELECT r_cost FROM settings WHERE server_id='{serverid}'")
         return self.cur.fetchone()[0]
+
+    def setAward(self, serverid, award):
+        self.cur.execute(f"UPDATE settings SET award='{award}' WHERE server_id='{serverid}'")
+        self.connection.commit()
+    
+    def getAward(self, serverid):
+        self.cur.execute(f"SELECT award FROM settings WHERE server_id='{serverid}'")
+        return self.cur.fetchone()[0]
+    

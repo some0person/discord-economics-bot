@@ -73,10 +73,21 @@ Now it's {Settings().getRCost(ctx.guild.id)}")
 
 
 @bot.command()
+async def set_award(ctx, *args):
+    if args and args[0].isnumeric():
+        Settings().setAward(ctx.guild.id, args[0])
+        await ctx.send(f"Star channel award is set to {args[0]} :sparkles:")
+    else:
+        await ctx.send(f"Please, specify new star channel award size after command :crying_cat_face: \
+Now it's {Settings().getAward(ctx.guild.id)}")
+
+
+@bot.command()
 async def get_settings(ctx, *args):
     row = f""":eye: Channels to audit ⮧\n\t- {Settings().getLChannels(ctx.guild.id)}\n
 :star: Star channel ⮧\n\t- {Settings().getSChannel(ctx.guild.id)}\n
-:coin: Reaction reward ⮧\n\t- {Settings().getRCost(ctx.guild.id)}"""
+:coin: Reaction reward ⮧\n\t- {Settings().getRCost(ctx.guild.id)}\n
+:sparkles: Star channel award ⮧\n\t- {Settings().getAward(ctx.guild.id)}"""
 
     await ctx.send(row)
 
