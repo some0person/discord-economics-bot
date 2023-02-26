@@ -2,12 +2,12 @@ CREATE TABLE settings (
     server_id BIGINT UNIQUE NOT NULL,
     reaction VARCHAR NOT NULL,
     l_channels VARCHAR,
-    s_channel INTEGER,
+    s_channel BIGINT,
     r_cost INTEGER NOT NULL,
     award INTEGER NOT NULL);
 
 
 CREATE TABLE data (
-    server_id INTEGER NOT NULL,
-    user_id INTEGER NOT NULL,
+    server_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
     score INTEGER NOT NULL)

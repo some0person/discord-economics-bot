@@ -83,11 +83,22 @@ Now it's {Settings().getAward(ctx.guild.id)}")
 
 
 @bot.command()
+async def set_reaction(ctx, *args):
+    if args:
+        Settings().setReaction(ctx.guild.id, args[0])
+        await ctx.send(f"Reaction successfully set to {args[0]}!")
+    else:
+        await ctx.send(f"Please, specify new readable reaction after command :crying_cat_face: \
+Now it's {Settings().getReaction(ctx.guild.id)}")
+
+
+@bot.command()
 async def get_settings(ctx, *args):
     row = f""":eye: Channels to audit ⮧\n\t- {Settings().getLChannels(ctx.guild.id)}\n
 :star: Star channel ⮧\n\t- {Settings().getSChannel(ctx.guild.id)}\n
 :coin: Reaction reward ⮧\n\t- {Settings().getRCost(ctx.guild.id)}\n
-:sparkles: Star channel award ⮧\n\t- {Settings().getAward(ctx.guild.id)}"""
+:sparkles: Star channel award ⮧\n\t- {Settings().getAward(ctx.guild.id)}\n
+:cactus: Readable reaction ⮧\n\t- {Settings().getReaction(ctx.guild.id)}"""
 
     await ctx.send(row)
 

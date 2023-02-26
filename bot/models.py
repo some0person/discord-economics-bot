@@ -74,3 +74,10 @@ class Settings:
         self.cur.execute(f"SELECT award FROM settings WHERE server_id='{serverid}'")
         return self.cur.fetchone()[0]
     
+    def setReaction(self, serverid, reaction):
+        self.cur.execute(f"UPDATE settings SET reaction='{reaction}' WHERE server_id='{serverid}'")
+        self.connection.commit()
+    
+    def getReaction(self, serverid):
+        self.cur.execute(f"SELECT reaction FROM settings WHERE server_id='{serverid}'")
+        return self.cur.fetchone()[0]
