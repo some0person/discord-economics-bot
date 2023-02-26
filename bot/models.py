@@ -41,4 +41,22 @@ class Settings:
 
     def getLChannels(self, serverid):
         self.cur.execute(f"SELECT l_channels FROM settings WHERE server_id='{serverid}'")
-        return map(lambda x: f"<#{x}>", self.cur.fetchone()[0].split(';'))
+        channels = self.cur.fetchone()[0]
+        if channels:
+            return " | ".join(map(lambda x: f"<#{x}>", channels.split(';')))
+        return "None"
+
+    def setSChannel(self, serverid, channelid):
+        self.cur.execute(f"UPDATE settings SET s_channel='{channelid}' WHERE server_id='{serverid}'")
+        self.connection.commit()
+    
+    def delSChannel(self, serverid):
+        self.cur.execute(f"UPDATE settings SET s_channel='0' WHERE server_id='{serverid}'")
+        self.connection.commit()
+    
+    def getSChannel(self, serverid):
+        self.cur.execute(f"SELECT s_channel FROM settings WHERE server_id='{serverid}'")
+        channel = self.cur.fetchone()[0]
+        if channel:
+            return f"<#{channel}>"
+        return "None"

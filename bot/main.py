@@ -47,8 +47,27 @@ async def del_listen_channel(ctx, *args):
 
 
 @bot.command()
+async def set_star_channel(ctx, *args):
+    channel = ch_id_conv(args, ctx.guild.text_channels)
+    if channel:
+        Settings().setSChannel(ctx.guild.id, channel)
+        await ctx.send("Successfully set up! :smirk_cat:")
+    else:
+        await ctx.send("This channel is incorrect :crying_cat_face: Please, use channel link (#channel-name)")
+        
+
+@bot.command()
+async def del_star_channel(ctx, *args):
+    Settings().delSChannel(ctx.guild.id)
+    await ctx.send("Successfully removed! :cloud_tornado:")
+    
+
+@bot.command()
 async def get_settings(ctx, *args):
-    await ctx.send(f":eye: Channels to audit ⮧\n\t- {' | '.join(Settings().getLChannels(ctx.guild.id))}")
+    row = f""":eye: Channels to audit ⮧\n\t- {Settings().getLChannels(ctx.guild.id)}\n
+:star: Star channel ⮧\n\t- {Settings().getSChannel(ctx.guild.id)}"""
+
+    await ctx.send(row)
 
 
 @bot.event
