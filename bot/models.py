@@ -81,3 +81,7 @@ class Settings:
     def getReaction(self, serverid):
         self.cur.execute(f"SELECT reaction FROM settings WHERE server_id='{serverid}'")
         return self.cur.fetchone()[0]
+
+    def checkOnListen(self, channelid):
+        self.cur.execute(f"SELECT 1 FROM settings WHERE l_channels LIKE '%{channelid}%' LIMIT 1")
+        return self.cur.fetchone()

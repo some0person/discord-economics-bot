@@ -14,6 +14,12 @@ def ch_id_conv(string, channels):
     return
 
 
+def is_guild_owner():
+    def predicate(ctx):
+        return ctx.guild is not None and ctx.guild.owner_id == ctx.author.id
+    return commands.check(predicate)
+
+
 @bot.event
 async def on_ready():
     if Settings().checkServers([guild.id for guild in bot.guilds]):
@@ -27,6 +33,7 @@ async def on_guild_join(guild):
     
 
 @bot.command()
+@commands.check_any(commands.is_owner(), is_guild_owner())
 async def add_listen_channel(ctx, *args):
     channel = ch_id_conv(args, ctx.guild.text_channels)
     if channel:
@@ -37,6 +44,7 @@ async def add_listen_channel(ctx, *args):
 
 
 @bot.command()
+@commands.check_any(commands.is_owner(), is_guild_owner())
 async def del_listen_channel(ctx, *args):
     channel = ch_id_conv(args, ctx.guild.text_channels)
     if channel:
@@ -47,6 +55,7 @@ async def del_listen_channel(ctx, *args):
 
 
 @bot.command()
+@commands.check_any(commands.is_owner(), is_guild_owner())
 async def set_star_channel(ctx, *args):
     channel = ch_id_conv(args, ctx.guild.text_channels)
     if channel:
@@ -57,12 +66,14 @@ async def set_star_channel(ctx, *args):
         
 
 @bot.command()
+@commands.check_any(commands.is_owner(), is_guild_owner())
 async def del_star_channel(ctx, *args):
     Settings().delSChannel(ctx.guild.id)
     await ctx.send("This channel isn't starred now! :cloud_tornado:")
 
 
 @bot.command()
+@commands.check_any(commands.is_owner(), is_guild_owner())
 async def set_rcost(ctx, *args):
     if args and args[0].isnumeric():
         Settings().setRCost(ctx.guild.id, args[0])
@@ -73,6 +84,7 @@ Now it's {Settings().getRCost(ctx.guild.id)}")
 
 
 @bot.command()
+@commands.check_any(commands.is_owner(), is_guild_owner())
 async def set_award(ctx, *args):
     if args and args[0].isnumeric():
         Settings().setAward(ctx.guild.id, args[0])
@@ -83,6 +95,7 @@ Now it's {Settings().getAward(ctx.guild.id)}")
 
 
 @bot.command()
+@commands.check_any(commands.is_owner(), is_guild_owner())
 async def set_reaction(ctx, *args):
     if args:
         Settings().setReaction(ctx.guild.id, args[0])
@@ -105,7 +118,8 @@ async def get_settings(ctx, *args):
 
 @bot.event
 async def on_reaction_add(reaction, user):
-    await bot.get_channel(reaction.message.channel.id).send("Reacted!")
+    if Settings().checkOnListen(reaction.message.channel.id):
+        await bot.get_channel(reaction.message.channel.id).send("Reacted!")
 
 
 bot.run(env["TOKEN"])
