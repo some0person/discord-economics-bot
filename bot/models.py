@@ -85,3 +85,19 @@ class Settings:
     def checkOnListen(self, channelid):
         self.cur.execute(f"SELECT 1 FROM settings WHERE l_channels LIKE '%{channelid}%' LIMIT 1")
         return self.cur.fetchone()
+
+
+class Data(Settings):
+    def checkEntry(self, serverid, userid):
+        self.cur.execute(f"SELECT server_id,user_id FROM data WHERE server_id='{serverid}' AND user_id='{userid}'")
+        if not self.cur.fetchone():
+            self.addEntry(serverid, userid)
+        
+    def addEntry(self, serverid, userid):
+        self.cur.execute("INSERT INTO data (server_id, user_id, score) VALUES (%s, %s, %s)", (serverid, userid, 0))
+        self.connection.commit()
+    
+    def incScore(self, serverid, userid, score):
+        self.cur.execute(f"SELECT score FROM data WHERE server_id='{serverid}' AND user_id='{userid}'")
+        self.cur.execute(f"UPDATE data SET score={self.cur.fetchone()[0] + int(score)} WHERE server_id='{serverid}' AND user_id='{userid}'")
+        self.connection.commit()

@@ -7,10 +7,20 @@ from models import *
 bot = commands.Bot(command_prefix=env["PREFIX"], intents=discord.Intents.all())
 
 
+check_on_alph = lambda string, alphabet: all(map(lambda x: x in alphabet, string))
+
+
 def ch_id_conv(string, channels):
     for channel in channels:
         if string and (channel.id == int(string[0][2:-1]) or string[0].isnumeric() and channel.id == int(string[0])):
             return channel.id
+    return
+
+
+def user_id_conv(string, users):
+    for user in users:
+        if string and (user.id == int(string[0][2:-1]) or string[0].isnumeric() and user.id == int(string[0])):
+            return user.id
     return
 
 
@@ -106,6 +116,15 @@ Now it's {Settings().getReaction(ctx.guild.id)}")
 
 
 @bot.command()
+@commands.check_any(commands.is_owner(), is_guild_owner())
+async def inc_score(ctx, *args):
+    user = user_id_conv(args, ctx.guild.members)
+    Data().checkEntry(ctx.guild.id, user)
+    if user and args[1]:
+        Data().incScore(ctx.guild.id, user, args[1])
+
+
+@bot.command()
 async def get_settings(ctx, *args):
     row = f""":eye: Channels to audit ⮧\n\t- {Settings().getLChannels(ctx.guild.id)}\n
 :star: Star channel ⮧\n\t- {Settings().getSChannel(ctx.guild.id)}\n
@@ -119,7 +138,8 @@ async def get_settings(ctx, *args):
 @bot.event
 async def on_reaction_add(reaction, user):
     if Settings().checkOnListen(reaction.message.channel.id):
-        await bot.get_channel(reaction.message.channel.id).send("Reacted!")
+        Data().checkEntry(reaction.message.guild.id, user.id)
+        Data().incScore(reaction.message.guild.id, user.id, Settings().getRCost(reaction.message.guild.id))
 
 
 bot.run(env["TOKEN"])
