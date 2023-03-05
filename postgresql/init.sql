@@ -9,5 +9,5 @@ CREATE TABLE settings (
 
 CREATE TABLE data (
     server_id BIGINT NOT NULL,
-    user_id BIGINT NOT NULL,
+    member_id BIGINT NOT NULL,
     score INTEGER NOT NULL)

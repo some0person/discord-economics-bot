@@ -1,103 +1,109 @@
 import psycopg2
 from os import environ as env
+from tools import channelCh
 
 
 class Settings:
-    def __init__(self):
-        self.connection = psycopg2.connect(host=env["HOSTNAME"],
-                                           user=env["POSTGRES_USER"],
-                                           password=env["POSTGRES_PASSWORD"],
-                                           dbname=env["POSTGRES_DB"])
-        
-        self.cur = self.connection.cursor()
-
-    def checkServers(self, serverlist):
+    def __init__(self) -> None:
+        self.con = psycopg2.connect(host=env["HOSTNAME"],
+                                    user=env["POSTGRES_USER"],
+                                    password=env["POSTGRES_PASSWORD"],
+                                    dbname=env["POSTGRES_DB"])
+        self.cur = self.con.cursor()
+    
+    def checkServers(self, serverlist: list[int]):
         self.cur.execute("SELECT server_id FROM settings")
         dbServers = self.cur.fetchall()
         if dbServers:
             return filter(lambda x: (x, ) not in dbServers, serverlist)
         return serverlist
     
-    def regServers(self, serverlist):
+    def regServers(self, serverlist: list[int]) -> None:
         for serverid in self.checkServers(serverlist):
             self.cur.execute("""INSERT INTO settings (server_id, reaction, l_channels, s_channel, r_cost, award)
                              VALUES (%s, %s, %s, %s, %s, %s)""", (serverid, ":star:", "", 0, 10, 5))
-            self.connection.commit()
+            self.con.commit()
 
-    def addLChannel(self, serverid, channelid):
+    
+    def addLChannel(self, serverid: str, channelid: str) -> None:
         self.cur.execute(f"SELECT l_channels FROM settings WHERE server_id='{serverid}'")
         lchannels = ';'.join(filter(lambda x: x, set(self.cur.fetchone()[0].split(';') + [str(channelid)])))
         self.cur.execute(f"UPDATE settings SET l_channels='{lchannels}' WHERE server_id='{serverid}'")
-        self.connection.commit()
+        self.con.commit()
 
-    def delLChannel(self, serverid, channelid):
+    def delLChannel(self, serverid: str, channelid: str) -> None:
         self.cur.execute(f"SELECT l_channels FROM settings WHERE server_id='{serverid}'")
         lchannels = ';'.join(filter(lambda x: x != str(channelid), self.cur.fetchone()[0].split(';')))
         self.cur.execute(f"UPDATE settings SET l_channels='{lchannels}' WHERE server_id='{serverid}'")
-        self.connection.commit()
+        self.con.commit()
 
-    def getLChannels(self, serverid):
+    def setSChannel(self, serverid: str, channelid: str) -> None:
+        self.cur.execute(f"UPDATE settings SET s_channel='{channelid}' WHERE server_id='{serverid}'")
+        self.con.commit()
+    
+    def delSChannel(self, serverid: str) -> None:
+        self.cur.execute(f"UPDATE settings SET s_channel='0' WHERE server_id='{serverid}'")
+        self.con.commit()
+    
+    def setRCost(self, serverid: str, cost: str) -> None:
+        self.cur.execute(f"UPDATE settings SET r_cost='{cost}' WHERE server_id='{serverid}'")
+        self.con.commit()
+    
+    def setAward(self, serverid: str, award: str) -> None:
+        self.cur.execute(f"UPDATE settings SET award='{award}' WHERE server_id='{serverid}'")
+        self.con.commit()
+    
+    def setReaction(self, serverid: str, reaction: str) -> None:
+        self.cur.execute(f"UPDATE settings SET reaction='{reaction}' WHERE server_id='{serverid}'")
+        self.con.commit()
+
+
+    def getLChannels(self, serverid: str) -> str:
         self.cur.execute(f"SELECT l_channels FROM settings WHERE server_id='{serverid}'")
         channels = self.cur.fetchone()[0]
         if channels:
             return " | ".join(map(lambda x: f"<#{x}>", channels.split(';')))
         return "None"
 
-    def setSChannel(self, serverid, channelid):
-        self.cur.execute(f"UPDATE settings SET s_channel='{channelid}' WHERE server_id='{serverid}'")
-        self.connection.commit()
-    
-    def delSChannel(self, serverid):
-        self.cur.execute(f"UPDATE settings SET s_channel='0' WHERE server_id='{serverid}'")
-        self.connection.commit()
-    
-    def getSChannel(self, serverid):
+    def getSChannel(self, serverid: str) -> str:
         self.cur.execute(f"SELECT s_channel FROM settings WHERE server_id='{serverid}'")
         channel = self.cur.fetchone()[0]
         if channel:
             return f"<#{channel}>"
         return "None"
 
-    def setRCost(self, serverid, cost):
-        self.cur.execute(f"UPDATE settings SET r_cost='{cost}' WHERE server_id='{serverid}'")
-        self.connection.commit()
-    
-    def getRCost(self, serverid):
-        self.cur.execute(f"SELECT r_cost FROM settings WHERE server_id='{serverid}'")
-        return self.cur.fetchone()[0]
-
-    def setAward(self, serverid, award):
-        self.cur.execute(f"UPDATE settings SET award='{award}' WHERE server_id='{serverid}'")
-        self.connection.commit()
-    
-    def getAward(self, serverid):
-        self.cur.execute(f"SELECT award FROM settings WHERE server_id='{serverid}'")
-        return self.cur.fetchone()[0]
-    
-    def setReaction(self, serverid, reaction):
-        self.cur.execute(f"UPDATE settings SET reaction='{reaction}' WHERE server_id='{serverid}'")
-        self.connection.commit()
-    
-    def getReaction(self, serverid):
+    def getReaction(self, serverid: str) -> str:
         self.cur.execute(f"SELECT reaction FROM settings WHERE server_id='{serverid}'")
         return self.cur.fetchone()[0]
 
-    def checkOnListen(self, channelid):
-        self.cur.execute(f"SELECT 1 FROM settings WHERE l_channels LIKE '%{channelid}%' LIMIT 1")
-        return self.cur.fetchone()
+    def getRCost(self, serverid: str) -> int:
+        self.cur.execute(f"SELECT r_cost FROM settings WHERE server_id='{serverid}'")
+        return self.cur.fetchone()[0]
 
+    def getAward(self, serverid: str) -> int:
+        self.cur.execute(f"SELECT award FROM settings WHERE server_id='{serverid}'")
+        return self.cur.fetchone()[0]
 
-class Data(Settings):
-    def checkEntry(self, serverid, userid):
-        self.cur.execute(f"SELECT server_id,user_id FROM data WHERE server_id='{serverid}' AND user_id='{userid}'")
-        if not self.cur.fetchone():
-            self.addEntry(serverid, userid)
-        
-    def addEntry(self, serverid, userid):
-        self.cur.execute("INSERT INTO data (server_id, user_id, score) VALUES (%s, %s, %s)", (serverid, userid, 0))
-        self.connection.commit()
     
-    def incScore(self, serverid, userid, score):
-        self.cur.execute(f"SELECT score FROM data WHERE server_id='{serverid}' AND user_id='{userid}'")
-        self.cur.execute(f"UPDATE data SET score={self.cur.fetchone()[0] + int(score)} WHERE server_id='{serverid}' AND user_id='{userid}'")
-        self.connection.commit()
+class Data:
+    def __init__(self) -> None:
+        self.con = psycopg2.connect(host=env["HOSTNAME"],
+                                    user=env["POSTGRES_USER"],
+                                    password=env["POSTGRES_PASSWORD"],
+                                    dbname=env["POSTGRES_DB"])
+        self.cur = self.con.cursor()
+    
+    def addEntry(self, serverid: str, memberid: str):
+        self.cur.execute("INSERT INTO data (server_id, member_id, score) VALUES (%s, %s, %s)", (serverid, memberid, 0))
+        self.con.commit()
+    
+    def checkEntry(self, serverid: str, memberid: str) -> None:
+        self.cur.execute(f"SELECT server_id,member_id FROM data WHERE server_id='{serverid}' AND member_id='{memberid}'")
+        if not self.cur.fetchone():
+            self.addEntry(serverid, memberid)
+    
+    def editScore(self, serverid: str, memberid: str, value: str) -> None:
+        self.checkEntry(serverid, memberid)
+        self.cur.execute(f"SELECT score FROM data WHERE server_id='{serverid}' AND member_id='{memberid}'")
+        self.cur.execute(f"UPDATE data SET score={self.cur.fetchone()[0] + int(value)} WHERE server_id='{serverid}' AND member_id='{memberid}'")
+        self.con.commit()
