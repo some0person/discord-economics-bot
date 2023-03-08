@@ -19,7 +19,7 @@ def numCh(num: str) -> bool:
     return False
 
 
-def reactionCh(string: str) -> bool:
+def symbolsCh(string: str) -> bool:
     return not any(map(lambda x: x in "|`';", string))
 
 

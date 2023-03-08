@@ -1,8 +1,8 @@
 import discord
 from emoji import demojize
 from os import environ as env
-from tools import channelCh, memberCh, numCh, reactionCh, strCh
-from models import Settings, Data
+from tools import channelCh, memberCh, numCh, symbolsCh, strCh
+from models import Settings, Data, PriceList
 
 
 client = discord.Bot(ccommand_prefix=env["PREFIX"], description="Thank you for using this bot!", intents=discord.Intents.all())
@@ -27,10 +27,13 @@ awardSetMsg = "Star channel award is set to {award} :sparkles:"
 awardSetEMsg = "Please, specify new star channel award size after command :crying_cat_face: Now it's {award}"
 reactionSetMsg = "Reaction successfully set to {reaction}!"
 reactionSetEMsg = "Please, specify new readable reaction after command :crying_cat_face: Now it's {reaction}"
+priceAddEMsg = "Please check your data. :crying_cat_face: \
+Keep in mind you can't use \"|\", \"`\", \"'\", \";\" symbols in title or description and non-integer numbers in price!"
+buyMsg = "{member} purchased {item}!"
+buyEMsg = "Please check your data. :crying_cat_face: Are you sure about item {itemid} existing?"
 
 scoreEditMsg = "Successfull change {member}'s score on {value} value"
 
-settingsTitle = "Settings"
 settingsColor = "#986a44"
 settingsImage = "https://i.redd.it/mgixxs06w7w51.gif"
 channelListenTitle = "Channels to audit ⮧"
@@ -38,6 +41,11 @@ channelStarredTitle = "Star channel ⮧"
 reactionTitle = "Readable reaction ⮧"
 reactionRewardTitle = "Reaction reward ⮧"
 awardTitle = "Star channel award ⮧"
+
+pricelistColor = "#986a44"
+pricelistImage = "https://media.tenor.com/9i_HS1NnfKwAAAAC/sewayaki-no-kitsune-senko-san-shiro.gif"
+
+
 
 
 # !!! Events !!!
@@ -125,7 +133,7 @@ async def setaward(interaction: discord.Interaction, award: str) -> None:
 
 @settingsGroup.command(description='Sets listen reaction. Unsupported symbols: "|`;\'"')
 async def setreaction(interaction: discord.Interaction, reaction: str) -> None:
-    if not reactionCh(reaction):
+    if not symbolsCh(reaction):
         await interaction.response.send_message(reactionSetEMsg.format(reaction=Settings().getReaction(interaction.guild.id)))
         return
     Settings().setReaction(interaction.guild.id, reaction)
@@ -136,7 +144,7 @@ async def setreaction(interaction: discord.Interaction, reaction: str) -> None:
 
 @infoGroup.command(description="Shows all bot's settings")
 async def settings(interaction: discord.Interaction) -> None:
-    embed=discord.Embed(color=int(settingsColor[1:], 16))
+    embed = discord.Embed(color=int(settingsColor[1:], 16))
     embed.set_thumbnail(url=settingsImage)
     embed.add_field(name=channelListenTitle, value=Settings().getLChannels(interaction.guild.id))
     embed.add_field(name=channelStarredTitle, value=Settings().getSChannel(interaction.guild.id))
@@ -144,6 +152,15 @@ async def settings(interaction: discord.Interaction) -> None:
     embed.add_field(name=reactionRewardTitle, value=Settings().getRCost(interaction.guild.id))
     embed.add_field(name=awardTitle, value=Settings().getAward(interaction.guild.id))
     
+    await interaction.response.send_message(embed=embed)
+
+
+@infoGroup.command(description="Shows server's price list")
+async def pricelist(interaction: discord.Interaction) -> None:
+    embed = discord.Embed(color=int(pricelistColor[1:], 16))
+    embed.set_thumbnail(url=pricelistImage)
+    for element in PriceList().getPrice(interaction.guild.id):
+        embed.add_field(name=f"{element[0]}\t|\t{element[1]}\t|\t{element[2]} :coin:", value=element[3], inline=False)
     await interaction.response.send_message(embed=embed)
 
 
@@ -160,6 +177,35 @@ async def score(interaction: discord.Interaction, member: str, value: str) -> No
         return
     Data().editScore(interaction.guild.id, member, value)
     await interaction.response.send_message(scoreEditMsg.format(member=f"<@{member}>", value=value))
+
+
+@editGroup.command(description="Add item to the price list")
+async def addprice(interaction: discord.Interaction, title: str, price: str, description: str = '') -> None:
+    if not symbolsCh(title + description) or not price.isdigit():
+        await interaction.response.send_message(priceAddEMsg)
+        return
+    PriceList().addPrice(interaction.guild.id, title, price, description)
+    await pricelist(interaction)
+
+
+@editGroup.command(description="Deletes item from the price list")
+async def delprice(interaction: discord.Interaction, itemid: str) -> None:
+    PriceList().delPrice(interaction.guild.id, itemid)
+    await pricelist(interaction)
+
+
+# !!! Simple commands !!!
+
+@client.slash_command(description="You can buy something from \"/info pricelist\"")
+async def buy(interaction: discord.Interaction, itemid: str) -> None:
+    if int(itemid) >= len(PriceList().getPrice(interaction.guild.id)):
+        await interaction.response.send_message(buyEMsg.format(itemid=itemid))
+        return
+    pricelist = "-".join([str(y) for y in list(filter(lambda x: x[0] == int(itemid), PriceList().getPrice(interaction.guild.id)))[0][:3]])
+    owner = await client.fetch_user(interaction.guild.owner.id)
+    Data().editScore(interaction.guild.id, interaction.user.id, -int(pricelist.split("-")[2]))
+    await owner.send(buyMsg.format(member=f"<@{interaction.user.id}>", item=pricelist))
+    await interaction.response.send_message(buyMsg.format(member=f"<@{interaction.user.id}>", item=pricelist))
 
 
 # !!! Bot launch !!!

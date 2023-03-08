@@ -1,6 +1,5 @@
 import psycopg2
 from os import environ as env
-from tools import channelCh
 
 
 class Settings:
@@ -107,3 +106,37 @@ class Data:
         self.cur.execute(f"SELECT score FROM data WHERE server_id='{serverid}' AND member_id='{memberid}'")
         self.cur.execute(f"UPDATE data SET score={self.cur.fetchone()[0] + int(value)} WHERE server_id='{serverid}' AND member_id='{memberid}'")
         self.con.commit()
+
+
+class PriceList:
+    def __init__(self) -> None:
+        self.con = psycopg2.connect(host=env["HOSTNAME"],
+                                    user=env["POSTGRES_USER"],
+                                    password=env["POSTGRES_PASSWORD"],
+                                    dbname=env["POSTGRES_DB"])
+        self.cur = self.con.cursor()
+    
+    def addPrice(self, serverid: int, title: str, price: str, description: str) -> None:
+        self.cur.execute(f"SELECT MAX(item_id) FROM pricelist WHERE server_id='{serverid}'")
+        itemid = self.cur.fetchone()[0]
+        if itemid:
+            itemid += 1
+        else:
+            itemid = 1
+        self.cur.execute("INSERT INTO pricelist (item_id, server_id, title, price, description) \
+                         VALUES (%s, %s, %s, %s, %s)", (itemid, serverid, title, price, description))
+        self.con.commit()
+    
+    def delPrice(self, serverid: int, index: str) -> None:
+        self.cur.execute(f"SELECT item_id,title,price,description FROM pricelist WHERE server_id='{serverid}'")
+        pricelist = map(lambda y: y[1:], filter(lambda x: x[0] != int(index), self.cur.fetchall()))
+        self.cur.execute(f"DELETE FROM pricelist WHERE server_id='{serverid}'")
+        [self.addPrice(serverid, item[0], item[1], item[2]) for item in pricelist]
+        self.con.commit()
+    
+    def getPrice(self, serverid: int) -> list[tuple]:
+        self.cur.execute(f"SELECT item_id,title,price,description FROM pricelist WHERE server_id='{serverid}'")
+        pricelist = self.cur.fetchall()
+        if pricelist:
+            return pricelist
+        return [("", "None", '', "The list is empty",)]

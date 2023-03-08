@@ -10,4 +10,12 @@ CREATE TABLE settings (
 CREATE TABLE data (
     server_id BIGINT NOT NULL,
     member_id BIGINT NOT NULL,
-    score INTEGER NOT NULL)
+    score INTEGER NOT NULL);
+
+
+CREATE TABLE pricelist (
+    item_id INTEGER NOT NULL,
+    server_id BIGINT NOT NULL,
+    title VARCHAR NOT NULL,
+    price INTEGER NOT NULL,
+    description VARCHAR);
