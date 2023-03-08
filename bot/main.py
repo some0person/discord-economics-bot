@@ -5,7 +5,7 @@ from tools import channelCh, memberCh, numCh, symbolsCh, strCh
 from models import Settings, Data, PriceList
 
 
-client = discord.Bot(ccommand_prefix=env["PREFIX"], description="Thank you for using this bot!", intents=discord.Intents.all())
+client = discord.Bot(description="Thank you for using this bot!", intents=discord.Intents.all())
 
 # Commands groups
 settingsGroup = discord.SlashCommandGroup("settings", "Bot setup related commands")
