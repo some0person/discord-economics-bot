@@ -106,6 +106,13 @@ class Data:
         self.cur.execute(f"SELECT score FROM data WHERE server_id='{serverid}' AND member_id='{memberid}'")
         self.cur.execute(f"UPDATE data SET score={self.cur.fetchone()[0] + int(value)} WHERE server_id='{serverid}' AND member_id='{memberid}'")
         self.con.commit()
+    
+    def getScore(self, serverid:int, memberid: int) -> int:
+        self.cur.execute(f"SELECT score FROM data WHERE server_id='{serverid}' AND member_id='{memberid}'")
+        score = self.cur.fetchone()[0]
+        if score:
+            return score
+        return 0
 
 
 class PriceList:

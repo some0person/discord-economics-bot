@@ -44,7 +44,7 @@ awardTitle = "Star channel award ⮧"
 
 pricelistColor = "#986a44"
 pricelistImage = "https://media.tenor.com/9i_HS1NnfKwAAAAC/sewayaki-no-kitsune-senko-san-shiro.gif"
-
+userBalanceTitle = "Your balance: {balance}"
 
 
 
@@ -159,6 +159,7 @@ async def settings(interaction: discord.Interaction) -> None:
 async def pricelist(interaction: discord.Interaction) -> None:
     embed = discord.Embed(color=int(pricelistColor[1:], 16))
     embed.set_thumbnail(url=pricelistImage)
+    embed.add_field(name=userBalanceTitle.format(balance=Data().getScore(interaction.guild.id, interaction.user.id)), value='', inline=False)
     for element in PriceList().getPrice(interaction.guild.id):
         embed.add_field(name=f"{element[0]}\t|\t{element[1]}\t|\t{element[2]} :coin:", value=element[3], inline=False)
     await interaction.response.send_message(embed=embed)
