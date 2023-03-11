@@ -1,8 +1,8 @@
 import discord
 from emoji import demojize
 from os import environ as env
-from tools import channelCh, memberCh, numCh, symbolsCh, strCh
 from models import Settings, Data, PriceList
+from tools import channelCh, memberCh, numCh, symbolsCh, strCh, extractMemberId
 
 
 client = discord.Bot(description="Thank you for using this bot!", intents=discord.Intents.all())
@@ -72,6 +72,16 @@ async def on_raw_reaction_add(payload: discord.RawReactionActionEvent) -> None:
     if payload.user_id == message.author.id or demojize(payload.emoji.name) != Settings().getReaction(payload.guild_id):
         return
     Data().editScore(payload.guild_id, message.author.id, Settings().getRCost(payload.guild_id))
+
+
+@client.event
+async def on_message(message: discord.Message) -> None:
+    if str(message.channel.id) in Settings().getSChannel(message.guild.id)[2:-1] and message.embeds:
+        for embded in message.embeds:
+            memberid = extractMemberId(message.guild, embded.author.url)
+            if not memberid:
+                return
+            Data().editScore(message.guild.id, memberid, Settings().getAward(message.guild.id))
 
 
 # !!! Settings commands !!!
@@ -164,6 +174,14 @@ async def pricelist(interaction: discord.Interaction) -> None:
         embed.add_field(name=f"{element[0]}\t|\t{element[1]}\t|\t{element[2]} :coin:", value=element[3], inline=False)
     await interaction.response.send_message(embed=embed)
 
+
+@infoGroup.command()
+async def sendembed(interaction: discord.Interaction, authorname: str, authorurl: str) -> None:
+    embed = discord.Embed()
+    embed.set_author(name=authorname, url=authorurl)
+    embed.add_field(name="Test embed", value="was successfully sent", inline=False)
+    await interaction.response.send_message(embed=embed)
+    
 
 # !!! Edit commands !!!
 

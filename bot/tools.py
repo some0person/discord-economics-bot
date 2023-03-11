@@ -25,3 +25,10 @@ def symbolsCh(string: str) -> bool:
 
 def strCh(string: str, alphabet: str) -> bool:
     return all(map(lambda x: x in alphabet, string))
+
+
+def extractMemberId(guild: discord.Guild, url: str) -> int:
+    memberid = url.split('/')[-1]
+    if memberid.isdigit() and guild.get_member(int(memberid)):
+        return int(memberid)
+    return 0
