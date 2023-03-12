@@ -107,11 +107,11 @@ class Data:
         self.cur.execute(f"UPDATE data SET score={self.cur.fetchone()[0] + int(value)} WHERE server_id='{serverid}' AND member_id='{memberid}'")
         self.con.commit()
     
-    def getScore(self, serverid:int, memberid: int) -> int:
+    def getScore(self, serverid: int, memberid: int) -> int:
         self.cur.execute(f"SELECT score FROM data WHERE server_id='{serverid}' AND member_id='{memberid}'")
-        score = self.cur.fetchone()[0]
+        score = self.cur.fetchone()
         if score:
-            return score
+            return score[0]
         return 0
 
 
@@ -123,7 +123,7 @@ class PriceList:
                                     dbname=env["POSTGRES_DB"])
         self.cur = self.con.cursor()
     
-    def addPrice(self, serverid: int, title: str, price: str, description: str) -> None:
+    def addProduct(self, serverid: int, title: str, price: str, description: str) -> None:
         self.cur.execute(f"SELECT MAX(item_id) FROM pricelist WHERE server_id='{serverid}'")
         itemid = self.cur.fetchone()[0]
         if itemid:
@@ -134,16 +134,25 @@ class PriceList:
                          VALUES (%s, %s, %s, %s, %s)", (itemid, serverid, title, price, description))
         self.con.commit()
     
-    def delPrice(self, serverid: int, index: str) -> None:
+    def delProduct(self, serverid: int, index: str) -> None:
         self.cur.execute(f"SELECT item_id,title,price,description FROM pricelist WHERE server_id='{serverid}'")
         pricelist = map(lambda y: y[1:], filter(lambda x: x[0] != int(index), self.cur.fetchall()))
         self.cur.execute(f"DELETE FROM pricelist WHERE server_id='{serverid}'")
-        [self.addPrice(serverid, item[0], item[1], item[2]) for item in pricelist]
+        [self.addProduct(serverid, item[0], item[1], item[2]) for item in pricelist]
         self.con.commit()
     
-    def getPrice(self, serverid: int) -> list[tuple]:
+    def getProducts(self, serverid: int) -> list[tuple]:
         self.cur.execute(f"SELECT item_id,title,price,description FROM pricelist WHERE server_id='{serverid}'")
         pricelist = self.cur.fetchall()
         if pricelist:
             return pricelist
         return [("", "None", '', "The list is empty",)]
+
+    def getProductName(self, serverid: int, productid: int) -> str:
+        self.cur.execute(f"SELECT title FROM pricelist WHERE server_id='{serverid}' AND item_id='{productid}'")
+        return self.cur.fetchone()[0]
+    
+    def getProductPrice(self, serverid: int, productid: int) -> int:
+        self.cur.execute(f"SELECT price FROM pricelist WHERE server_id='{serverid}' AND item_id='{productid}'")
+        return self.cur.fetchone()[0]
+    

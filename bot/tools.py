@@ -27,8 +27,12 @@ def strCh(string: str, alphabet: str) -> bool:
     return all(map(lambda x: x in alphabet, string))
 
 
-def extractMemberId(guild: discord.Guild, url: str) -> int:
-    memberid = url.split('/')[-1]
-    if memberid.isdigit() and guild.get_member(int(memberid)):
-        return int(memberid)
+async def extractMemberId(guild: discord.Guild, url: str) -> int:
+    channelid, messageid = url.split('/')[-2:]
+    if channelid.isdigit() and messageid.isdigit():
+        channel = await guild.fetch_channel(channelid)
+        if channel:
+            message = await channel.fetch_message(messageid)
+            if message:
+                return message.author.id
     return 0
