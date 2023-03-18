@@ -14,7 +14,7 @@
     |
     <a href="#About">About</a>
     |
-    <a href="#It's-functionality">Functionality</a>
+    <a href="#Its-functionality">Functionality</a>
     |
     <a href="#How-to-configure-the-bot">Configuration</a>
     |
@@ -37,7 +37,7 @@ DSEconomics is my first bot built with Discord API using PyCord Python library.
 <img src="https://user-images.githubusercontent.com/109872677/226076223-c17b88f7-7ae4-4c30-bec5-d0d64fbca5ae.png">
 </p>
 
-## It's functionality
+## Its functionality
 - Reward for defined reactions received;
 
 - Reward for placing embed of message in specific text channel;
